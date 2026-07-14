@@ -4,19 +4,39 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_USERS = {
-    os.getenv("APP_USERNAME", "admin"): os.getenv("APP_PASSWORD", "admin123"),
-    "j.doe@enterprise.com": "Admin@123",
-}
+_APP_USER = os.getenv("APP_USERNAME")
+_APP_PASS = os.getenv("APP_PASSWORD")
+if not _APP_USER or not _APP_PASS:
+    raise RuntimeError("APP_USERNAME and APP_PASSWORD must be set in environment variables.")
+
+_USERS = {_APP_USER: _APP_PASS}
+
+_MAX_ATTEMPTS = 5
+_LOCKOUT_SECONDS = 300  # 5 minutes
 
 
 def login_page():
+    import time
     st.markdown("""
     <style>
     .block-container { padding-top: 4vh !important; }
     body { background: #f1f5f9; }
     </style>
     """, unsafe_allow_html=True)
+
+    # ── Rate limiting ─────────────────────────────────────────────────────────
+    now = time.time()
+    attempts   = st.session_state.get("login_attempts", 0)
+    locked_at  = st.session_state.get("login_locked_at", 0)
+
+    if attempts >= _MAX_ATTEMPTS:
+        remaining = int(_LOCKOUT_SECONDS - (now - locked_at))
+        if remaining > 0:
+            st.error(f"Too many failed attempts. Please wait {remaining} seconds.")
+            st.stop()
+        else:
+            st.session_state.login_attempts = 0
+            st.session_state.login_locked_at = 0
 
     _, center, _ = st.columns([1, 1.2, 1])
 
@@ -58,8 +78,12 @@ def login_page():
                 st.session_state.authenticated = True
                 st.session_state.current_user = username
                 st.session_state.page = "supplier_manage"
+                st.session_state.login_attempts = 0
                 st.rerun()
             else:
+                st.session_state.login_attempts = attempts + 1
+                if st.session_state.login_attempts >= _MAX_ATTEMPTS:
+                    st.session_state.login_locked_at = time.time()
                 st.error("Invalid credentials. Please try again.")
 
         st.markdown("""

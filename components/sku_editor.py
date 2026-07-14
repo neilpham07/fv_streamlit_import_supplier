@@ -1,5 +1,10 @@
+import html as _html
 import streamlit as st
 import pandas as pd
+
+
+def _esc(value) -> str:
+    return _html.escape(str(value or ""))
 
 
 _EMPTY_ROW = {
@@ -71,14 +76,14 @@ def render_sku_view():
     <div class="breadcrumb">
         <a onclick="void(0)">Suppliers</a>
         &nbsp;/&nbsp;
-        <strong style="color:#0f172a;">{supplier_name}</strong>
+        <strong style="color:#0f172a;">{_esc(supplier_name)}</strong>
     </div>
     """, unsafe_allow_html=True)
 
     # ── Header ──
     col_h, col_btns = st.columns([4, 1])
     with col_h:
-        st.markdown(f'<h2 style="margin:0;font-weight:700;color:#0f172a;">{supplier_name} — SKU Master Data</h2>', unsafe_allow_html=True)
+        st.markdown(f'<h2 style="margin:0;font-weight:700;color:#0f172a;">{_esc(supplier_name)} — SKU Master Data</h2>', unsafe_allow_html=True)
         st.markdown('<p style="color:#64748b;font-size:0.84rem;margin:3px 0 0;">Bulk spreadsheet view for SKU management and distributor mapping.</p>', unsafe_allow_html=True)
     with col_btns:
         st.button("≡ Filter", use_container_width=True, key="sku_filter")

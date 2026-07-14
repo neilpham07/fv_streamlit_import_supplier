@@ -1,5 +1,10 @@
+import html as _html
 import streamlit as st
 import pandas as pd
+
+
+def _esc(value) -> str:
+    return _html.escape(str(value or ""))
 
 
 # ── sample fallback ────────────────────────────────────────────────────────────
@@ -162,20 +167,20 @@ def _render_table(df: pd.DataFrame):
 
         cells[1].markdown(f"""
         <div>
-            <div class="supplier-name-main">{row.get('supplier_name','')}</div>
-            <div class="supplier-name-sub">{str(row.get('supplier_type',''))[:28]}</div>
+            <div class="supplier-name-main">{_esc(row.get('supplier_name',''))}</div>
+            <div class="supplier-name-sub">{_esc(str(row.get('supplier_type',''))[:28])}</div>
         </div>""", unsafe_allow_html=True)
 
-        cells[2].markdown(f'<div class="cell-text">{row.get("supplier_type","")}</div>', unsafe_allow_html=True)
-        cells[3].markdown(f'<div class="cell-text">{row.get("cooperation_form","")}</div>', unsafe_allow_html=True)
+        cells[2].markdown(f'<div class="cell-text">{_esc(row.get("supplier_type",""))}</div>', unsafe_allow_html=True)
+        cells[3].markdown(f'<div class="cell-text">{_esc(row.get("cooperation_form",""))}</div>', unsafe_allow_html=True)
         cells[4].markdown(_rule_tags(row.get("rule_data", "")), unsafe_allow_html=True)
-        cells[5].markdown(f'<div class="cell-text">{row.get("dms_code","")}</div>', unsafe_allow_html=True)
+        cells[5].markdown(f'<div class="cell-text">{_esc(row.get("dms_code",""))}</div>', unsafe_allow_html=True)
         cells[6].markdown(f"""
         <div class="cell-text">
-            <span style="color:{dot_color};">●</span> {on_date}<br>
-            <small style="color:{dot_color};">{status}</small>
+            <span style="color:{dot_color};">●</span> {_esc(on_date)}<br>
+            <small style="color:{dot_color};">{_esc(status)}</small>
         </div>""", unsafe_allow_html=True)
-        cells[7].markdown(f'<div class="cell-text">{row.get("parent_org","")}</div>', unsafe_allow_html=True)
+        cells[7].markdown(f'<div class="cell-text">{_esc(row.get("parent_org",""))}</div>', unsafe_allow_html=True)
 
     st.markdown("<hr style='border-color:#f0f0f0;'>", unsafe_allow_html=True)
     st.markdown(f'<div style="font-size:0.8rem;color:#64748b;padding:4px 0;">Showing 1 to {len(df)} of {len(df)} suppliers</div>', unsafe_allow_html=True)
@@ -221,7 +226,7 @@ def _render_edit_panel(supplier_id: str):
 
     col_title, col_close = st.columns([5, 1])
     col_title.markdown(
-        f'<div class="panel-title">Edit Supplier:<br>{supplier.get("supplier_name","")}</div>',
+        f'<div class="panel-title">Edit Supplier:<br>{_esc(supplier.get("supplier_name",""))}</div>',
         unsafe_allow_html=True,
     )
     if col_close.button("✕", key="close_panel", help="Close panel"):
